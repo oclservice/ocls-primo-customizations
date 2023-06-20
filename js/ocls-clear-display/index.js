@@ -62,52 +62,59 @@ angular
                         for(let i = 0; i < services.length; i++){
                             console.log(i);
                             console.log(services[i]);
-                            var clearLink = services[i].publicNote.match(/href="(.+\.scholarsportal\.info\/licenses\/)([^"]+)\"/);
+                            var clearLinks = services[i].publicNote.match(/([^"]+\.scholarsportal\.info\/licenses\/[^"]+)/g);
 
-                            if (clearLink){
+                            if (clearLinks){
                                 
-                                console.log('Found CLEAR link');
-                                let clearBaseUrl = clearLink[1];
-                                console.log(clearBaseUrl);
-                                let clearResourceName = clearLink[2];
-                                console.log(clearResourceName);
-                                oclsClearService.fetchOurData(clearBaseUrl,clearResourceName,i)
-                                .then((data) => {
-                                    try{
-                                        if (!data)return;
-                                        // The data variable contains the license information as a JSON object.
-                                        console.log(data);
-                                        // Replace the public note content with a summary display of this information
-                                        let permissionsOutput = '<a href="' + clearBaseUrl + clearResourceName + '">Permitted uses (click for more):</a><dl class="ocls-clear-display">';
-                                        if (data.license.e_reserves){
-                                            permissionsOutput += addPermissionsObject('E-Reserve?',data.license.e_reserves.usage);
-                                        }
-                                        if (data.license.cms){
-                                           permissionsOutput = permissionsOutput +
-                                            addPermissionsObject('CMS?',data.license.cms.usage);
-                                        }
-                                        if (data.license.course_pack){
-                                           permissionsOutput = permissionsOutput +
-                                            addPermissionsObject('Course packs?',data.license.course_pack.usage);
-                                        }
-                                        if (data.license.durable_url){
-                                           permissionsOutput = permissionsOutput +
-                                            addPermissionsObject('Link?',data.license.durable_url.usage);
-                                        }
-                                        if (data.license.ill_print){
-                                           permissionsOutput = permissionsOutput +
-                                            addPermissionsObject('ILL?',data.license.ill_print.usage);
-                                        }
-                                        permissionsOutput = permissionsOutput + '</dl></a>';
-                                        services[i].publicNote = permissionsOutput;
+                                services[i].publicNote = '';
+                                
+                                clearLinks.forEach(function(foundLink){
+                                    console.log('Found CLEAR link');
+                                    let clearLink = foundLink.match(/(.+\.scholarsportal\.info\/licenses\/)(.+)/);
+                                    let clearBaseUrl = clearLink[1];
+                                    console.log(clearBaseUrl);
+                                    let clearResourceName = clearLink[2];
+                                    console.log(clearResourceName);
+                                    oclsClearService.fetchOurData(clearBaseUrl,clearResourceName,i)
+                                    .then((data) => {
+                                        try{
+                                            if (!data)return;
+                                            // The data variable contains the license information as a JSON object.
+                                            console.log(data);
+                                            // Replace the public note content with a summary display of this information
+                                            let permissionsOutput = '<a href="' + clearBaseUrl + clearResourceName + '" target="_blank">Permitted uses (click for more):<dl class="ocls-clear-display">';
+                                            if (data.license.e_reserves){
+                                                permissionsOutput += addPermissionsObject('E-Reserve?',data.license.e_reserves.usage);
+                                            }
+                                            if (data.license.cms){
+                                               permissionsOutput = permissionsOutput +
+                                                addPermissionsObject('CMS?',data.license.cms.usage);
+                                            }
+                                            if (data.license.course_pack){
+                                               permissionsOutput = permissionsOutput +
+                                                addPermissionsObject('Course packs?',data.license.course_pack.usage);
+                                            }
+                                            if (data.license.durable_url){
+                                               permissionsOutput = permissionsOutput +
+                                                addPermissionsObject('Link?',data.license.durable_url.usage);
+                                            }
+                                            if (data.license.ill_print){
+                                               permissionsOutput = permissionsOutput +
+                                                addPermissionsObject('ILL?',data.license.ill_print.usage);
+                                            }
+                                            permissionsOutput = permissionsOutput + '</dl></a><br/>';
+                                            services[i].publicNote = services[i].publicNote + permissionsOutput;
                                         
                                         
+                                        }
+                                        catch(e){
+                                            console.error("an error occured: oclsClearDisplayController:\n\n");
+                                            console.error(e.message);
+                                        }
+                                    })
                                     }
-                                    catch(e){
-                                        console.error("an error occured: oclsClearDisplayController:\n\n");
-                                        console.error(e.message);
-                                    }
-                                })
+                                    
+                                )
                                 
                             }
                             
