@@ -37,8 +37,8 @@ angular
         }])
     .controller('oclsClearDisplayController', ['$scope', 'oclsClearService', function ($scope, oclsClearService) {
         
-        function addPermissionsObject(term,value){
-            return '<dt>' + term + '</dt><dd class="ocls-clear-term-' + value + '">' + value + '</dd>';
+        function addPermissionsObject(term,value,termText,valueText){
+            return '<dt title="' + termText + '">' + term + '</dt><dd class="ocls-clear-term-' + value + '" title="' + valueText + '">' + value + '</dd>';
         };
         
         var vm = this;
@@ -62,7 +62,8 @@ angular
                         for(let i = 0; i < services.length; i++){
                             console.log(i);
                             console.log(services[i]);
-                            var clearLinks = services[i].publicNote.match(/([^"]+\.scholarsportal\.info\/licenses\/[^"]+)/g);
+                            var clearLinks = services[i].publicNote.match(/([^"]+\.scholarsportal\.info\/[^"]+)/g);
+                            console.log(clearLinks);
 
                             if (clearLinks){
                                 
@@ -70,7 +71,7 @@ angular
                                 
                                 clearLinks.forEach(function(foundLink){
                                     console.log('Found CLEAR link');
-                                    let clearLink = foundLink.match(/(.+\.scholarsportal\.info\/licenses\/)(.+)/);
+                                    let clearLink = foundLink.match(/(.+\.scholarsportal\.info\/[^"]+\/)(.+)/);
                                     let clearBaseUrl = clearLink[1];
                                     console.log(clearBaseUrl);
                                     let clearResourceName = clearLink[2];
@@ -82,25 +83,25 @@ angular
                                             // The data variable contains the license information as a JSON object.
                                             console.log(data);
                                             // Replace the public note content with a summary display of this information
-                                            let permissionsOutput = '<a href="' + clearBaseUrl + clearResourceName + '" target="_blank">Permitted uses (click for more):<dl class="ocls-clear-display">';
+                                            let permissionsOutput = '<a href="' + clearBaseUrl + clearResourceName + '" target="_blank">Permitted uses (hover for details or click for more info):<dl class="ocls-clear-display">';
                                             if (data.license.e_reserves){
-                                                permissionsOutput += addPermissionsObject('E-Reserve?',data.license.e_reserves.usage);
+                                                permissionsOutput += addPermissionsObject('E-Reserve?',data.license.e_reserves.usage, data.license.e_reserves.case, data.license.e_reserves['definition-short']);
                                             }
                                             if (data.license.cms){
                                                permissionsOutput = permissionsOutput +
-                                                addPermissionsObject('CMS?',data.license.cms.usage);
+                                                addPermissionsObject('CMS?',data.license.cms.usage,data.license.cms.case,data.license.cms['definition-short']);
                                             }
                                             if (data.license.course_pack){
                                                permissionsOutput = permissionsOutput +
-                                                addPermissionsObject('Course packs?',data.license.course_pack.usage);
+                                                addPermissionsObject('Course packs?',data.license.course_pack.usage,data.license.course_pack.case,data.license.course_pack['definition-short']);
                                             }
                                             if (data.license.durable_url){
                                                permissionsOutput = permissionsOutput +
-                                                addPermissionsObject('Link?',data.license.durable_url.usage);
+                                                addPermissionsObject('Link?',data.license.durable_url.usage,data.license.durable_url.case,data.license.durable_url['definition-short']);
                                             }
                                             if (data.license.ill_print){
                                                permissionsOutput = permissionsOutput +
-                                                addPermissionsObject('ILL?',data.license.ill_print.usage);
+                                                addPermissionsObject('ILL?',data.license.ill_print.usage,data.license.ill_print.case,data.license.ill_print['definition-short']);
                                             }
                                             permissionsOutput = permissionsOutput + '</dl></a><br/>';
                                             services[i].publicNote = services[i].publicNote + permissionsOutput;
